@@ -12,15 +12,15 @@ app.use(cors());
 
 // Replace the uri string with your MongoDB deployment's connection string.
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ctrkbrk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-console.log(uri)
-const client = new MongoClient(uri);
+ const client = new MongoClient(uri);
 
 async function run() {
   try {
     
     // databse collections
-    const database = client.db("TravelSpotManagement");
+    const database = client.db("TouristSpotManagement");
     const userCollection = database.collection("users");
+    const spotCollection = database.collection("spots");
 
     // Users API 
       app.get("/users", async (req, res) => {
@@ -54,12 +54,26 @@ async function run() {
         }
       })
 
+      // Turist Spots API
+      app.get("/spots", async(req,res)=>{
+        const result = await spotCollection.find().toArray()
+        res.send(result)       
+      })
+      app.post("/spots", async (req,res)=>{
+        const spot = req.body;
+        const result = await spotCollection.insertOne(spot);
+        res.send(result)
+      })
+      app.get("/spots/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = {
+          _id: new ObjectId(id),
+        };
+        const result = await spotCollection.findOne(query);
+        res.send(result);
+      })
 
 
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployment. You successfully connected to MongoDB!"
-    // );
 
     
   } finally {
